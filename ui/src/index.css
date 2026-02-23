@@ -1,0 +1,190 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Variables ──────────────────────────────────────────────────────── */
+:root {
+  --bg-base:    #030810;
+  --bg-card:    #0a1628;
+  --bg-hover:   #0f1e38;
+  --border:     #1e293b;
+  --border-dim: #0f172a;
+  --gold:       #e8c87a;
+  --gold-dim:   #a8884a;
+  --text-primary:   #e2e8f0;
+  --text-secondary: #94a3b8;
+  --text-dim:       #475569;
+  --green:  #4ade80;
+  --red:    #f87171;
+  --blue:   #60a5fa;
+}
+
+/* ── Base ───────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  font-family: 'DM Sans', system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #334155; }
+
+/* ── Typography utilities ───────────────────────────────────────────────── */
+.font-display { font-family: 'Instrument Serif', Georgia, serif; }
+.font-mono    { font-family: 'JetBrains Mono', 'Fira Code', monospace; }
+
+/* ── Animations ─────────────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-gold {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+}
+
+.animate-fade-in { animation: fadeIn 0.35s ease-out forwards; }
+.animate-slide-up { animation: slideUp 0.35s ease-out forwards; }
+
+/* Staggered children */
+.stagger > *:nth-child(1) { animation-delay: 0ms; }
+.stagger > *:nth-child(2) { animation-delay: 60ms; }
+.stagger > *:nth-child(3) { animation-delay: 120ms; }
+.stagger > *:nth-child(4) { animation-delay: 180ms; }
+.stagger > *:nth-child(5) { animation-delay: 240ms; }
+.stagger > *:nth-child(6) { animation-delay: 300ms; }
+
+/* ── Component utilities ────────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.card-hover {
+  transition: border-color 0.15s, background 0.15s;
+}
+.card-hover:hover {
+  border-color: #334155;
+  background: var(--bg-hover);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+/* Filing type badges */
+.badge-10k   { background: #0f2744; color: #60a5fa; border: 1px solid #1e3a5a; }
+.badge-10q   { background: #0f2a1e; color: #4ade80; border: 1px solid #1a3d28; }
+.badge-8k    { background: #2a1e0f; color: #fb923c; border: 1px solid #3d2a14; }
+.badge-proxy { background: #1e0f2a; color: #c084fc; border: 1px solid #2d1a3d; }
+.badge-other { background: #1a1a2a; color: #94a3b8; border: 1px solid #2a2a3d; }
+
+/* Status badges */
+.badge-running   { background: #0f2744; color: #60a5fa; border: 1px solid #1e3a5a; }
+.badge-completed { background: #0f2a1e; color: #4ade80; border: 1px solid #1a3d28; }
+.badge-partial   { background: #2a250f; color: #fbbf24; border: 1px solid #3d3314; }
+.badge-failed    { background: #2a0f0f; color: #f87171; border: 1px solid #3d1414; }
+
+/* ── Table styles ───────────────────────────────────────────────────────── */
+.data-table { width: 100%; border-collapse: collapse; }
+.data-table th {
+  padding: 10px 16px;
+  text-align: left;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+.data-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-dim);
+  vertical-align: middle;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tbody tr {
+  transition: background 0.1s;
+  cursor: pointer;
+}
+.data-table tbody tr:hover { background: var(--bg-hover); }
+
+/* ── Input / Select ─────────────────────────────────────────────────────── */
+.input {
+  background: var(--bg-base);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  padding: 7px 12px;
+  transition: border-color 0.15s;
+  outline: none;
+}
+.input:focus { border-color: #334155; }
+.input::placeholder { color: var(--text-dim); }
+
+select.input { appearance: none; cursor: pointer; }
+
+/* ── Button ─────────────────────────────────────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: 1px solid transparent;
+}
+.btn-primary {
+  background: #0f2744;
+  color: #60a5fa;
+  border-color: #1e3a5a;
+}
+.btn-primary:hover { background: #162d52; border-color: #2a4a72; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  border-color: var(--border);
+}
+.btn-ghost:hover { background: var(--bg-hover); color: var(--text-primary); }
+
+.btn-gold {
+  background: #1a1408;
+  color: var(--gold);
+  border-color: #3d3014;
+}
+.btn-gold:hover { background: #221c0a; }
