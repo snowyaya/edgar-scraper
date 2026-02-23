@@ -1,3 +1,15 @@
+"""
+Analytics API endpoints for corpus insights and dashboard metrics.
+
+- GET /api/analytics/overview: High-level corpus stats (totals, averages).
+- GET /api/analytics/filing-types: Document count and quality by filing type.
+- GET /api/analytics/languages: Document count and percentage by language.
+- GET /api/analytics/quality-histogram: Quality score distribution histogram.
+- GET /api/analytics/timeline: Documents saved per day for the last N days.
+- GET /api/analytics/top-companies: Companies ranked by document count and quality.
+- GET /api/analytics/reading-time: Distribution of estimated reading time buckets.
+"""
+
 from __future__ import annotations
 
 import logging
@@ -19,9 +31,6 @@ from api.models import (
 )
 from scraper.db import Company, CrawlRun, Document
 
-"""
-Analytics API endpoints for corpus insights and dashboard metrics.
-"""
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/analytics", tags=["analytics"])
