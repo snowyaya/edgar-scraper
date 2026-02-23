@@ -1,16 +1,4 @@
 #!/usr/bin/env python3
-"""
-Loads the JSONL output and prints a structured report covering:
-  - Corpus size and volume
-  - Filing type distribution
-  - Language distribution
-  - Quality score statistics and histogram
-  - Company coverage
-  - Reading time distribution
-  - SEC item (section) coverage
-  - Top/bottom documents by quality
-"""
-
 from __future__ import annotations
 
 import argparse
@@ -34,10 +22,6 @@ except ImportError:
     RICH = False
     console = None
 
-
-# ---------------------------------------------------------------------------
-# Data loading
-# ---------------------------------------------------------------------------
 
 def load_jsonl(path: Path, filing_type: Optional[str] = None) -> list[dict]:
     if not path.exists():
@@ -68,10 +52,6 @@ def load_jsonl(path: Path, filing_type: Optional[str] = None) -> list[dict]:
 
     return docs
 
-
-# ---------------------------------------------------------------------------
-# Calculate statistics
-# ---------------------------------------------------------------------------
 
 def compute_stats(docs: list[dict]) -> dict:
     """
@@ -209,10 +189,6 @@ def compute_stats(docs: list[dict]) -> dict:
     }
 
 
-# ---------------------------------------------------------------------------
-# Display helpers
-# ---------------------------------------------------------------------------
-
 def _bar(value: int, max_value: int, width: int = 30) -> str:
     """Render an ASCII progress bar."""
     if max_value == 0:
@@ -230,7 +206,7 @@ def print_report_plain(stats: dict) -> None:
     print(f"  Generated: {stats['generated_at']}")
     print(f"{'═' * 60}\n")
 
-    # Overview
+    # overview
     c = stats["corpus"]
     print("CORPUS OVERVIEW")
     print(sep)
@@ -240,7 +216,7 @@ def print_report_plain(stats: dict) -> None:
     print(f"  Total chars     : {c['total_chars']:>10,}")
     print()
 
-    # Word counts
+    # word counts
     w = stats["word_count"]
     print("WORD COUNT")
     print(sep)
@@ -250,7 +226,7 @@ def print_report_plain(stats: dict) -> None:
     print(f"  Median : {w['median']:>10,.1f}")
     print()
 
-    # Quality score
+    # quality score
     q = stats["quality_score"]
     print("QUALITY SCORE")
     print(sep)
@@ -262,7 +238,7 @@ def print_report_plain(stats: dict) -> None:
     print(f"  ≥ 0.80 : {q['pct_above_0_8']}%")
     print()
 
-    # Quality histogram
+    # quality histogram
     print("  Quality Histogram:")
     hist = stats["quality_score"]["histogram"]
     max_count = max(hist.values()) if hist else 1
@@ -271,7 +247,7 @@ def print_report_plain(stats: dict) -> None:
         print(f"    {bucket}  {bar}  {count:,}")
     print()
 
-    # Filing types
+    # filing types
     print("FILING TYPES")
     print(sep)
     ft = stats["filing_types"]
@@ -281,7 +257,7 @@ def print_report_plain(stats: dict) -> None:
         print(f"  {ftype:<10}  {bar}  {count:,}")
     print()
 
-    # Languages
+    # languages
     print("LANGUAGES")
     print(sep)
     langs = stats["languages"]
@@ -291,7 +267,7 @@ def print_report_plain(stats: dict) -> None:
         print(f"  {lang:<8}  {count:>6,}  ({pct:.1f}%)")
     print()
 
-    # Fiscal years
+    # fiscal years
     print("FISCAL YEARS")
     print(sep)
     fy = stats["fiscal_years"]
@@ -301,7 +277,7 @@ def print_report_plain(stats: dict) -> None:
         print(f"  {year}  {bar}  {count:,}")
     print()
 
-    # Top companies
+    # top companies
     print("TOP COMPANIES BY DOCUMENT COUNT")
     print(sep)
     for i, co in enumerate(stats["top_companies"], 1):
@@ -315,7 +291,7 @@ def print_report_plain(stats: dict) -> None:
         print(f"  {item:<15}  {count:>6,}")
     print()
 
-    # Top/bottom quality
+    # top/bottom quality
     print("TOP 5 DOCUMENTS BY QUALITY")
     print(sep)
     for doc in stats["top_docs_by_quality"]:
@@ -341,7 +317,7 @@ def print_report_rich(stats: dict) -> None:
     ))
     console.print()
 
-    # Overview table
+    # overview table
     overview = Table(title="Corpus Overview", show_header=False, box=None, padding=(0, 2))
     overview.add_column(style="dim")
     overview.add_column(style="bold white", justify="right")
@@ -352,7 +328,7 @@ def print_report_rich(stats: dict) -> None:
     console.print(overview)
     console.print()
 
-    # Quality + word counts
+    # quality + word counts
     q = stats["quality_score"]
     w = stats["word_count"]
 
@@ -368,7 +344,7 @@ def print_report_rich(stats: dict) -> None:
     console.print(qual_table)
     console.print()
 
-    # Filing types
+    # filing types
     ft_table = Table(title="Filing Type Distribution", padding=(0, 2))
     ft_table.add_column("Type", style="cyan bold", no_wrap=True)
     ft_table.add_column("Count", justify="right", style="white")
@@ -380,7 +356,7 @@ def print_report_rich(stats: dict) -> None:
     console.print(ft_table)
     console.print()
 
-    # Languages
+    # languages
     lang_table = Table(title="Language Distribution", padding=(0, 2))
     lang_table.add_column("Language", style="cyan")
     lang_table.add_column("Count", justify="right")
@@ -391,7 +367,7 @@ def print_report_rich(stats: dict) -> None:
     console.print(lang_table)
     console.print()
 
-    # Top companies
+    # top companies
     co_table = Table(title="Top Companies", padding=(0, 2))
     co_table.add_column("#", style="dim", width=3)
     co_table.add_column("Company", style="white")
@@ -411,7 +387,7 @@ def print_report_rich(stats: dict) -> None:
     console.print(sec_table)
     console.print()
 
-    # Top docs by quality
+    # top docs by quality
     top_table = Table(title="Top 5 Documents by Quality", padding=(0, 2))
     top_table.add_column("Score", style="green bold", width=6)
     top_table.add_column("Company", style="white", width=25)
@@ -429,10 +405,6 @@ def print_report_rich(stats: dict) -> None:
     console.print(top_table)
     console.print()
 
-
-# ---------------------------------------------------------------------------
-# Entry point
-# ---------------------------------------------------------------------------
 
 def main() -> None:
     parser = argparse.ArgumentParser(
