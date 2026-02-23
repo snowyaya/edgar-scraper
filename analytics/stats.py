@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
 """
-analytics/stats.py
-==================
-Standalone corpus analytics script.
-
 Loads the JSONL output and prints a structured report covering:
   - Corpus size and volume
   - Filing type distribution
@@ -13,25 +9,6 @@ Loads the JSONL output and prints a structured report covering:
   - Reading time distribution
   - SEC item (section) coverage
   - Top/bottom documents by quality
-
-Usage
------
-    # Analyse the default output file
-    python analytics/stats.py
-
-    # Specify a custom JSONL file
-    python analytics/stats.py --input output/edgar.jsonl
-
-    # Export report as JSON
-    python analytics/stats.py --json > report.json
-
-    # Filter to specific filing type
-    python analytics/stats.py --filing-type 10-K
-
-Requirements
-------------
-    pip install rich  (for coloured terminal output)
-    OR: falls back to plain text if rich is not installed
 """
 
 from __future__ import annotations
