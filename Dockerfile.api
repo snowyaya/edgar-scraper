@@ -1,0 +1,66 @@
+# =============================================================================
+# Dockerfile.api
+# FastAPI + uvicorn — REST API service
+# =============================================================================
+#
+# Build stages:
+#   1. deps   — install Python dependencies with uv (cached layer)
+#   2. final  — copy source, set entrypoint
+#
+# On startup, entrypoint.sh runs:
+#   alembic upgrade head   → applies pending migrations (idempotent)
+#   uvicorn api.main:app   → starts the API server
+
+FROM python:3.12-slim AS deps
+
+# Install uv — Rust-based package manager, 10-100x faster than pip
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+WORKDIR /app
+
+# Copy dependency manifest first — this layer is cached until deps change
+COPY pyproject.toml uv.lock* ./
+
+# Install production dependencies only (no dev group)
+# --frozen: use uv.lock exactly, no re-resolution
+# --no-dev: skip dev dependency group
+# --no-install-project: don't install the project itself yet (avoids cache busting)
+RUN uv sync --frozen --no-install-project
+
+# =============================================================================
+FROM python:3.12-slim AS final
+
+# Install uv in final stage (needed for `uv run` commands)
+COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
+
+WORKDIR /app
+
+# Copy the virtualenv built in the deps stage
+COPY --from=deps /app/.venv /app/.venv
+
+# Make venv binaries available without activation
+ENV PATH="/app/.venv/bin:$PATH"
+ENV PYTHONPATH="/app"
+# Don't buffer stdout/stderr — important for Docker log streaming
+ENV PYTHONUNBUFFERED=1
+# Don't write .pyc files in the container
+ENV PYTHONDONTWRITEBYTECODE=1
+
+# Copy application source
+COPY scraper/ ./scraper/
+COPY api/ ./api/
+COPY migrations/ ./migrations/
+COPY alembic.ini ./
+COPY tests/ ./tests/
+
+# Copy and set executable permission on entrypoint
+COPY entrypoint.sh ./
+RUN chmod +x entrypoint.sh
+
+# Run as non-root user for security
+RUN useradd --create-home --shell /bin/bash appuser
+USER appuser
+
+EXPOSE 8000
+
+ENTRYPOINT ["./entrypoint.sh"]

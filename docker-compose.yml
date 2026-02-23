@@ -1,0 +1,100 @@
+name: edgar-scraper
+
+# =============================================================================
+# Services start in this order:
+#   1. db          → postgres starts, health check passes
+#   2. api         → runs `alembic upgrade head`, then starts uvicorn
+#   3. scraper     → crawls SEC EDGAR, writes to DB, exits 0
+#   4. ui          → serves React build, proxies /api → api:8000
+# =============================================================================
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # db — PostgreSQL 16
+  # ---------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-edgar}
+      POSTGRES_USER: ${POSTGRES_USER:-edgar_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    volumes:
+      # Named volume — data persists across `docker compose down` and restarts
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      # Expose to host for local inspection with psql / TablePlus / DBeaver
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-edgar_user} -d ${POSTGRES_DB:-edgar}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ---------------------------------------------------------------------------
+  # api — FastAPI + uvicorn
+  # ---------------------------------------------------------------------------
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy   # won't start until postgres is ready
+    env_file: .env
+    environment:
+      # Override host to use the Docker service name, not localhost
+      POSTGRES_HOST: db
+    ports:
+      - "8000:8000"
+    volumes:
+      # Mount source in development so code changes don't require rebuild
+      # Remove this volume mount for production
+      - ./api:/app/api
+      - ./scraper:/app/scraper
+      - ./migrations:/app/migrations
+      - ./alembic.ini:/app/alembic.ini
+      
+  # ---------------------------------------------------------------------------
+  # scraper — one-shot crawl job
+  # ---------------------------------------------------------------------------
+  scraper:
+    build:
+      context: .
+      dockerfile: Dockerfile.scraper
+    # No restart — scraper runs once and exits. To re-run:
+    #   docker compose run scraper
+    #   docker compose run scraper python -m scraper.main --ciks 0000320193
+    depends_on:
+      db:
+        condition: service_healthy
+      api:
+        # Wait for API (and therefore Alembic migrations) to be up
+        # before writing data — avoids race condition on first run
+        condition: service_started
+    env_file: .env
+    environment:
+      POSTGRES_HOST: db
+    volumes:
+      # Output JSONL is also written to host filesystem (bonus export)
+      - ./output:/app/output
+
+  # ---------------------------------------------------------------------------
+  # ui — React SPA served by Nginx
+  # ---------------------------------------------------------------------------
+  ui:
+    build:
+      context: ./ui
+      dockerfile: ../Dockerfile.ui
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+
+volumes:
+  pgdata:
+    driver: local
