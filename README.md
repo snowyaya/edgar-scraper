@@ -58,7 +58,7 @@ Scraper pipeline (per document):
 git clone https://github.com/snowyaya/edgar-scraper.git
 
 # Edit .env — the only required change is SEC_USER_AGENT
-cp .env.example .env
+cp .env
 nano .env
 ```
 
