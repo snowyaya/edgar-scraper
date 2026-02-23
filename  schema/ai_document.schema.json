@@ -1,0 +1,315 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/your-org/edgar-scraper/schema/ai_document.schema.json",
+  "title": "AIDocument",
+  "description": "A single SEC EDGAR filing document enriched for AI workflows (RAG, search, fine-tuning, analytics). Each object in the JSONL export follows this schema.",
+  "type": "object",
+  "required": [
+    "id",
+    "content_hash",
+    "schema_version",
+    "url",
+    "company",
+    "filing_type",
+    "filing_date",
+    "fetched_at",
+    "title",
+    "body_text",
+    "word_count",
+    "char_count",
+    "reading_time_minutes",
+    "language",
+    "content_type",
+    "quality_score",
+    "has_tables",
+    "tags",
+    "sections"
+  ],
+  "additionalProperties": false,
+  "properties": {
+
+    "id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Unique document identifier (UUID v4). Stable across re-runs for the same content_hash."
+    },
+
+    "content_hash": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$",
+      "description": "SHA-256 hex digest of body_text. Primary deduplication key — two documents with identical body_text share the same hash and only one is stored."
+    },
+
+    "schema_version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version for migration tracking. Increment when breaking changes are made to the document shape."
+    },
+
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Source URL on SEC EDGAR (e.g. https://www.sec.gov/Archives/edgar/data/320193/...)"
+    },
+
+    "accession_number": {
+      "type": ["string", "null"],
+      "pattern": "^[0-9]{10}-[0-9]{2}-[0-9]{6}$",
+      "description": "SEC accession number in canonical format (e.g. 0000320193-23-000077). Uniquely identifies a filing on EDGAR."
+    },
+
+    "company": {
+      "type": "object",
+      "description": "Registrant company metadata derived from the SEC submissions API.",
+      "required": ["cik", "name"],
+      "additionalProperties": false,
+      "properties": {
+        "cik": {
+          "type": "string",
+          "pattern": "^[0-9]{10}$",
+          "description": "SEC Central Index Key, zero-padded to 10 digits. Stable permanent identifier for each registrant."
+        },
+        "name": {
+          "type": "string",
+          "description": "Registrant legal name as filed with the SEC."
+        },
+        "tickers": {
+          "type": ["array", "null"],
+          "items": { "type": "string" },
+          "description": "Exchange ticker symbols (e.g. ['AAPL']). May be empty for non-public filers."
+        },
+        "sic_code": {
+          "type": ["string", "null"],
+          "description": "SEC Standard Industrial Classification code (e.g. '3674'). Use for sector-based filtering."
+        },
+        "sic_description": {
+          "type": ["string", "null"],
+          "description": "Human-readable SIC description (e.g. 'Semiconductors and Related Devices')."
+        }
+      }
+    },
+
+    "filing_type": {
+      "type": "string",
+      "enum": ["10-K", "10-Q", "8-K", "DEF 14A", "S-1", "20-F", "6-K"],
+      "description": "SEC form type. Determines document structure, mandatory sections, and AI use cases."
+    },
+
+    "filing_date": {
+      "type": ["string", "null"],
+      "format": "date",
+      "description": "Date the filing was submitted to the SEC (YYYY-MM-DD)."
+    },
+
+    "period_of_report": {
+      "type": ["string", "null"],
+      "format": "date",
+      "description": "Fiscal period this filing covers (YYYY-MM-DD). For 10-K this is the fiscal year end date."
+    },
+
+    "fiscal_year": {
+      "type": ["integer", "null"],
+      "minimum": 1993,
+      "maximum": 2099,
+      "description": "Calendar year of the reporting period, derived from period_of_report. Use for year-based filtering and time-series analysis."
+    },
+
+    "fetched_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 UTC timestamp when the document was scraped. Use to track corpus freshness."
+    },
+
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Document title. Extracted from <title> tag or <h1>, or constructed as '{Company} — Form {type}' if neither is usable."
+    },
+
+    "body_text": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Clean, structured full text of the filing. Boilerplate (nav, footer, EDGAR chrome) stripped. Whitespace normalised. This is the primary field for LLM ingestion."
+    },
+
+    "headings": {
+      "type": ["array", "null"],
+      "items": { "type": "string" },
+      "description": "Ordered list of all section heading texts. Use for document navigation and topic modelling without parsing body_text."
+    },
+
+    "sections": {
+      "type": "array",
+      "description": "Body text pre-split at heading boundaries. Primary interface for RAG chunking — avoids re-splitting at query time.",
+      "items": {
+        "type": "object",
+        "required": ["level", "heading", "body_text", "position", "word_count"],
+        "additionalProperties": false,
+        "properties": {
+          "level": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 4,
+            "description": "Heading depth (1=H1, 2=H2, etc.)."
+          },
+          "heading": {
+            "type": "string",
+            "description": "Section heading text (cleaned)."
+          },
+          "body_text": {
+            "type": "string",
+            "description": "Section body text (cleaned). May be empty for structural headings."
+          },
+          "position": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Zero-indexed position in the document. Use to reconstruct document order."
+          },
+          "word_count": {
+            "type": "integer",
+            "minimum": 0,
+            "description": "Word count of body_text. Use for LLM context window budgeting per section."
+          },
+          "sec_item": {
+            "type": ["string", "null"],
+            "examples": [
+              "item_1", "item_1a", "item_1b", "item_2", "item_3",
+              "item_7", "item_7a", "item_8", "item_9a", "item_15"
+            ],
+            "description": "Canonical SEC item identifier if the heading matches a mandated filing section. Enables section-targeted RAG retrieval (e.g. 'all Risk Factors from 2023 10-Ks')."
+          }
+        }
+      }
+    },
+
+    "word_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total word count of body_text. Use for LLM context window planning and corpus filtering. 10-K filings typically range from 20,000 to 100,000 words."
+    },
+
+    "char_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total character count of body_text."
+    },
+
+    "reading_time_minutes": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Estimated reading time in minutes at 238 words per minute (average adult reading speed). 10-K filings typically require 1.5–7 hours."
+    },
+
+    "language": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 5,
+      "examples": ["en", "es", "zh", "de"],
+      "description": "ISO 639-1 language code detected from body_text. SEC filings are ~99% English; non-English documents are typically foreign private issuer filings."
+    },
+
+    "content_type": {
+      "type": "string",
+      "enum": [
+        "annual_report",
+        "quarterly_report",
+        "current_report",
+        "proxy_statement",
+        "registration_statement",
+        "other"
+      ],
+      "description": "Semantic document category derived from filing_type. Use for high-level corpus segmentation."
+    },
+
+    "quality_score": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Composite quality signal (0.0–1.0) computed from four components: length adequacy (30%), language detection confidence (25%), content density (25%), and structural richness (20%). Use as a pre-filter before expensive LLM processing. Scores ≥ 0.7 indicate high-quality documents suitable for fine-tuning."
+    },
+
+    "has_tables": {
+      "type": "boolean",
+      "description": "True if the document contains one or more HTML tables. Financial statements always contain tables; use to identify quantitative-heavy documents."
+    },
+
+    "table_count": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Number of HTML tables in the document. High counts (>20) typically indicate financial statement sections."
+    },
+
+    "code_ratio": {
+      "type": ["number", "null"],
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Fraction of body_text characters inside <pre>/<code> blocks. Near-zero for all SEC filings. Included for schema completeness and anomaly detection."
+    },
+
+    "link_count": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Number of hyperlinks in the document."
+    },
+
+    "depth_in_site": {
+      "type": ["integer", "null"],
+      "minimum": 0,
+      "description": "Number of path segments in the URL. Proxy for document depth within the EDGAR archive."
+    },
+
+    "tags": {
+      "type": "array",
+      "items": { "type": "string" },
+      "uniqueItems": true,
+      "description": "Derived tag list for faceted search and training data categorisation. Tags are deterministic — derived from filing_type, SIC code, and detected SEC items. Examples: 'annual-report', 'technology', 'risk-factors', 'mda', 'financial-statements'."
+    }
+  },
+
+  "examples": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440000",
+      "content_hash": "a3f5c2d1e4b6f8a9c0d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4",
+      "schema_version": 1,
+      "url": "https://www.sec.gov/Archives/edgar/data/320193/000032019323000077/aapl-20230930.htm",
+      "accession_number": "0000320193-23-000077",
+      "company": {
+        "cik": "0000320193",
+        "name": "Apple Inc.",
+        "tickers": ["AAPL"],
+        "sic_code": "3674",
+        "sic_description": "Semiconductors and Related Devices"
+      },
+      "filing_type": "10-K",
+      "filing_date": "2023-11-03",
+      "period_of_report": "2023-09-30",
+      "fiscal_year": 2023,
+      "fetched_at": "2024-01-15T10:30:00Z",
+      "title": "Apple Inc. — Annual Report on Form 10-K",
+      "body_text": "APPLE INC.\n\nFORM 10-K\n\nItem 1. Business\n\nApple Inc. designs...",
+      "headings": ["Item 1. Business", "Item 1A. Risk Factors", "Item 7. MD&A"],
+      "sections": [
+        {
+          "level": 2,
+          "heading": "Item 1A. Risk Factors",
+          "body_text": "The following discussion of risk factors...",
+          "position": 1,
+          "word_count": 8432,
+          "sec_item": "item_1a"
+        }
+      ],
+      "word_count": 42817,
+      "char_count": 271043,
+      "reading_time_minutes": 179.9,
+      "language": "en",
+      "content_type": "annual_report",
+      "quality_score": 0.91,
+      "has_tables": true,
+      "table_count": 34,
+      "code_ratio": 0.0,
+      "link_count": 127,
+      "depth_in_site": 6,
+      "tags": ["annual-report", "10-k", "technology", "item-1a", "risk-factors", "mda", "financial-statements"]
+    }
+  ]
+}

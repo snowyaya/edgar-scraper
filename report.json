@@ -1,0 +1,189 @@
+{
+  "generated_at": "2026-02-23T04:58:25.718337Z",
+  "corpus": {
+    "total_documents": 54,
+    "total_companies": 6,
+    "total_words": 1075199,
+    "total_chars": 7339078
+  },
+  "word_count": {
+    "min": 179,
+    "max": 184132,
+    "mean": 19911.1,
+    "median": 661.0,
+    "stdev": 52245.6
+  },
+  "quality_score": {
+    "min": 0.4349,
+    "max": 0.84,
+    "mean": 0.6942,
+    "median": 0.638,
+    "stdev": 0.1181,
+    "pct_above_0_7": 38.9,
+    "pct_above_0_8": 37.0,
+    "histogram": {
+      "0.4–0.5": 2,
+      "0.5–0.6": 5,
+      "0.6–0.7": 26,
+      "0.7–0.8": 1,
+      "0.8–0.9": 20
+    }
+  },
+  "reading_time": {
+    "mean_minutes": 83.7,
+    "median_minutes": 2.8,
+    "distribution": {
+      "< 15 min": 46,
+      "2–4 hours": 3,
+      "4+ hours": 5
+    }
+  },
+  "filing_types": {
+    "8-K": 46,
+    "20-F": 5,
+    "10-K": 3
+  },
+  "content_types": {
+    "current_report": 46,
+    "annual_report": 8
+  },
+  "languages": {
+    "en": 54
+  },
+  "fiscal_years": {
+    "2026": 13,
+    "2025": 28,
+    "2024": 8,
+    "2023": 2,
+    "2022": 1,
+    "2021": 1,
+    "2020": 1
+  },
+  "top_companies": [
+    {
+      "cik": "0000789019",
+      "name": "MICROSOFT CORP",
+      "document_count": 15
+    },
+    {
+      "cik": "0000027419",
+      "name": "TARGET CORP",
+      "document_count": 15
+    },
+    {
+      "cik": "0000104169",
+      "name": "Walmart Inc.",
+      "document_count": 8
+    },
+    {
+      "cik": "0001652044",
+      "name": "Alphabet Inc.",
+      "document_count": 6
+    },
+    {
+      "cik": "0001403161",
+      "name": "VISA INC.",
+      "document_count": 5
+    },
+    {
+      "cik": "0001549802",
+      "name": "JD.com, Inc.",
+      "document_count": 5
+    }
+  ],
+  "sec_item_coverage": {
+    "item_9_01": 3,
+    "item_8_01": 3,
+    "item_5_03": 1,
+    "item_7_01": 1,
+    "item_2_02": 1
+  },
+  "top_tags": {
+    "current-report": 46,
+    "8-k": 46,
+    "retail-trade": 28,
+    "services": 26,
+    "annual-report": 8,
+    "20-f": 5,
+    "10-k": 3,
+    "item-9-01": 3,
+    "item-8-01": 3,
+    "item-5-03": 1,
+    "item-7-01": 1,
+    "item-2-02": 1
+  },
+  "top_docs_by_quality": [
+    {
+      "title": "MICROSOFT CORP — Form 8-K",
+      "company": "MICROSOFT CORP",
+      "filing_type": "8-K",
+      "quality_score": 0.84,
+      "word_count": 501
+    },
+    {
+      "title": "MICROSOFT CORP — Form 8-K",
+      "company": "MICROSOFT CORP",
+      "filing_type": "8-K",
+      "quality_score": 0.84,
+      "word_count": 887
+    },
+    {
+      "title": "MICROSOFT CORP — Form 8-K",
+      "company": "MICROSOFT CORP",
+      "filing_type": "8-K",
+      "quality_score": 0.84,
+      "word_count": 1170
+    },
+    {
+      "title": "MICROSOFT CORP — Form 8-K",
+      "company": "MICROSOFT CORP",
+      "filing_type": "8-K",
+      "quality_score": 0.84,
+      "word_count": 1006
+    },
+    {
+      "title": "MICROSOFT CORP — Form 8-K",
+      "company": "MICROSOFT CORP",
+      "filing_type": "8-K",
+      "quality_score": 0.84,
+      "word_count": 582
+    }
+  ],
+  "bottom_docs_by_quality": [
+    {
+      "title": "tgt-20251119",
+      "company": "TARGET CORP",
+      "filing_type": "8-K",
+      "quality_score": 0.5475,
+      "word_count": 392
+    },
+    {
+      "title": "tgt-20250820",
+      "company": "TARGET CORP",
+      "filing_type": "8-K",
+      "quality_score": 0.5474,
+      "word_count": 392
+    },
+    {
+      "title": "tgt-20250521",
+      "company": "TARGET CORP",
+      "filing_type": "8-K",
+      "quality_score": 0.5467,
+      "word_count": 392
+    },
+    {
+      "title": "v-20260127",
+      "company": "VISA INC.",
+      "filing_type": "8-K",
+      "quality_score": 0.4836,
+      "word_count": 179
+    },
+    {
+      "title": "v-20251230",
+      "company": "VISA INC.",
+      "filing_type": "8-K",
+      "quality_score": 0.4349,
+      "word_count": 226
+    }
+  ]
+}
