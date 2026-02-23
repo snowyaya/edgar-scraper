@@ -1,13 +1,13 @@
 """
 Analytics API endpoints for corpus insights and dashboard metrics.
 
-- GET /api/analytics/overview: High-level corpus stats (totals, averages).
-- GET /api/analytics/filing-types: Document count and quality by filing type.
-- GET /api/analytics/languages: Document count and percentage by language.
-- GET /api/analytics/quality-histogram: Quality score distribution histogram.
-- GET /api/analytics/timeline: Documents saved per day for the last N days.
-- GET /api/analytics/top-companies: Companies ranked by document count and quality.
-- GET /api/analytics/reading-time: Distribution of estimated reading time buckets.
+- GET /api/analytics/overview
+- GET /api/analytics/filing-types
+- GET /api/analytics/languages
+- GET /api/analytics/quality-histogram
+- GET /api/analytics/timeline
+- GET /api/analytics/top-companies
+- GET /api/analytics/reading-time
 """
 
 from __future__ import annotations
@@ -34,10 +34,6 @@ from scraper.db import Company, CrawlRun, Document
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/analytics", tags=["analytics"])
-
-# ---------------------------------------------------------------------------
-# Overview
-# ---------------------------------------------------------------------------
 
 @router.get("/overview", response_model=OverviewStats)
 async def get_overview(
@@ -77,10 +73,6 @@ async def get_overview(
     )
 
 
-# ---------------------------------------------------------------------------
-# Filing type distribution
-# ---------------------------------------------------------------------------
-
 @router.get("/filing-types", response_model=list[FilingTypeStats])
 async def get_filing_type_stats(
     db: AsyncSession = Depends(get_db),
@@ -111,10 +103,6 @@ async def get_filing_type_stats(
     ]
 
 
-# ---------------------------------------------------------------------------
-# Language distribution
-# ---------------------------------------------------------------------------
-
 @router.get("/languages", response_model=list[LanguageStats])
 async def get_language_stats(
     db: AsyncSession = Depends(get_db),
@@ -144,10 +132,6 @@ async def get_language_stats(
         for row in result.all()
     ]
 
-
-# ---------------------------------------------------------------------------
-# Quality score histogram
-# ---------------------------------------------------------------------------
 
 @router.get("/quality-histogram", response_model=list[QualityBucket])
 async def get_quality_histogram(
@@ -187,10 +171,6 @@ async def get_quality_histogram(
     ]
 
 
-# ---------------------------------------------------------------------------
-# Timeline
-# ---------------------------------------------------------------------------
-
 @router.get("/timeline", response_model=list[TimelinePoint])
 async def get_timeline(
     days: int = Query(default=30, ge=1, le=365),
@@ -221,10 +201,6 @@ async def get_timeline(
         for row in result.all()
     ]
 
-
-# ---------------------------------------------------------------------------
-# Top companies
-# ---------------------------------------------------------------------------
 
 @router.get("/top-companies", response_model=list[TopCompany])
 async def get_top_companies(
@@ -263,10 +239,6 @@ async def get_top_companies(
         for row in result.all()
     ]
 
-
-# ---------------------------------------------------------------------------
-# Reading time distribution
-# ---------------------------------------------------------------------------
 
 @router.get("/reading-time", response_model=list[ReadingTimeDistribution])
 async def get_reading_time_distribution(

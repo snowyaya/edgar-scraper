@@ -1,10 +1,10 @@
 """
 Documents API endpoints for browsing and retrieving scraped filings.
 
-GET /api/documents              — paginated list with 8+ filter dimensions
-GET /api/documents/{id}         — full document detail including sections
-GET /api/documents/{id}/sections — sections only (RAG chunking endpoint)
-GET /api/export                 — stream filtered corpus as JSONL
+GET /api/documents
+GET /api/documents/{id}
+GET /api/documents/{id}/sections
+GET /api/export
 """
 
 from __future__ import annotations
@@ -33,10 +33,6 @@ from scraper.db import Company, Document, DocumentSection
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/documents", tags=["documents"])
 
-
-# ---------------------------------------------------------------------------
-# Shared filter builder
-# ---------------------------------------------------------------------------
 
 def _apply_document_filters(
     stmt,
@@ -102,10 +98,6 @@ SORT_COLUMNS = {
 }
 
 
-# ---------------------------------------------------------------------------
-# List documents
-# ---------------------------------------------------------------------------
-
 @router.get("", response_model=PaginatedDocuments)
 async def list_documents(
     limit: int = Query(default=20, ge=1, le=100),
@@ -122,7 +114,7 @@ async def list_documents(
     search: str | None = Query(default=None, description="Full-text search across title + body"),
     tags: list[str] | None = Query(default=None, description="Filter by tags (AND logic)"),
     
-    # Sorting
+    # sorting
     sort: str = Query(default="fetched_at", description="Sort field"),
     order: str = Query(default="desc", pattern="^(asc|desc)$"),
     db: AsyncSession = Depends(get_db),
@@ -166,10 +158,6 @@ async def list_documents(
     return PaginatedDocuments(total=total, limit=limit, offset=offset, items=items)
 
 
-# ---------------------------------------------------------------------------
-# Document detail
-# ---------------------------------------------------------------------------
-
 @router.get("/{document_id}", response_model=DocumentDetail)
 async def get_document(
     document_id: UUID,
@@ -198,10 +186,6 @@ async def get_document(
 
     return detail
 
-
-# ---------------------------------------------------------------------------
-# Sections only (RAG endpoint)
-# ---------------------------------------------------------------------------
 
 @router.get("/{document_id}/sections", response_model=list[DocumentSectionSchema])
 async def get_document_sections(
@@ -242,10 +226,6 @@ async def get_document_sections(
 
     return [DocumentSectionSchema.model_validate(s) for s in sections]
 
-
-# ---------------------------------------------------------------------------
-# JSONL export (streaming)
-# ---------------------------------------------------------------------------
 
 async def _stream_jsonl(
     db: AsyncSession,
