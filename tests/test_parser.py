@@ -1,5 +1,5 @@
 from __future__ import annotations
-import pytest
+
 from scraper.parser import (
     ParsedPage,
     _clean_whitespace,
