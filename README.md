@@ -64,7 +64,7 @@ nano .env
 
 **Required:** Set your real name and email in `.env`:
 ```
-SEC_USER_AGENT="Your Name your@email.com"
+SEC_USER_AGENT="YourName@email.com"
 ```
 The SEC uses this to identify your scraper. Requests without a valid User-Agent may be rate-limited.
 
