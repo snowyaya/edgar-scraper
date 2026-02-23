@@ -436,6 +436,16 @@ edgar-scraper/
 
 ## Future Work
 
+### Authentication
+Add JWT-based auth to the API. Support API keys for programmatic access
+(RAG systems, model training pipelines). Role-based access: read-only vs
+admin (trigger crawls, delete runs).
+
+### Schema Evolution
+Increment `schema_version` in `documents` for each structural change.
+Downstream consumers filter by version to avoid schema mismatch. Run
+backfill migrations when adding new enrichment fields.
+
 ### Scheduling & orchestration
 Replace the one-shot Docker service with a scheduler (Celery + Redis, or Prefect). Run nightly incremental crawls per company — only fetching filings newer than the most recent `filing_date` in the DB.
 
@@ -444,6 +454,11 @@ Add a seeding script that loads the current S&P 500 constituent list from a main
 
 ### Monitoring & alerting
 Add Prometheus metrics (crawl rate, error rate, quality score distribution over time) and alert on quality degradation or EDGAR API changes.
+
+### Distributed Crawling
+Replace direct HTTP calls with a Celery + Redis task queue. Multiple worker
+containers process URLs in parallel. Enables 10× throughput without changing
+the core parsing logic.
 
 ### De-duplication across sources
 Extend `content_hash` dedup to work across multiple sources (EDGAR + company IR pages). The hash-based approach already supports this — no schema changes needed.
