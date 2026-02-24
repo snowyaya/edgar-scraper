@@ -90,12 +90,12 @@ The UI is now available at **http://localhost** (port 80).
 # Run with multiple companies
 docker compose run --rm scraper python -m scraper.main \
   --ciks GOOGL 0001045810 \
-  --output output/*.jsonl \
+  --output output/edgar.jsonl \
   --max-filings 50
 
 # Check the JSONL output
 ls output/
-head -n1 output/*.jsonl | python3 -m json.tool
+head -n1 output/edgar.jsonl | python3 -m json.tool
 ```
 
 **Option B — API:**
